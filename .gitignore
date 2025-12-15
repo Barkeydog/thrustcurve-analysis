@@ -1,0 +1,4 @@
+node_modules/
+*.txt
+*.json
+__pycache__/
