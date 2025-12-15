@@ -1,10 +1,10 @@
-
 import json
 import tkinter as tk
 from tkinter import ttk
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import os
+import numpy as np
 
 # Load Data
 try:
@@ -88,6 +88,43 @@ class GraphPage(ttk.Frame):
         self.ax.set_title(title)
         self.ax.grid(True, linestyle='--', alpha=0.7)
         
+        # Calculate Regression and Sigma Curves
+        try:
+            x_arr = np.array(x)
+            y_arr = np.array(y)
+            
+            # Linear Fit (degree 1)
+            # y = mx + b
+            m, b = np.polyfit(x_arr, y_arr, 1)
+            
+            # Generate trendline points (sorted by x for clean line)
+            x_sort = np.sort(x_arr)
+            y_trend = m * x_sort + b
+            
+            # Predict values for original x to calculate residuals
+            y_pred = m * x_arr + b
+            residuals = y_arr - y_pred
+            
+            # Standard Deviation of residuals
+            std_dev = np.std(residuals)
+            
+            # Plot Trendline
+            self.ax.plot(x_sort, y_trend, color='black', linestyle='-', linewidth=1.5, label='Mean Trend')
+            
+            # Plot 1 Sigma (+/- 1 std dev)
+            self.ax.plot(x_sort, y_trend + std_dev, color='green', linestyle='--', linewidth=1, label='1 Sigma')
+            self.ax.plot(x_sort, y_trend - std_dev, color='green', linestyle='--', linewidth=1)
+            self.ax.plot([], [], color='green', linestyle='--', label='_nolegend_') # Dummy for legend if needed
+
+            # Plot 2 Sigma (+/- 2 std dev)
+            self.ax.plot(x_sort, y_trend + 2*std_dev, color='orange', linestyle=':', linewidth=1, label='2 Sigma')
+            self.ax.plot(x_sort, y_trend - 2*std_dev, color='orange', linestyle=':', linewidth=1)
+            
+            self.ax.legend()
+            
+        except Exception as e:
+            print(f"Error calculating regression: {e}")
+
         # Create Annotation (hidden by default)
         self.annot = self.ax.annotate("", xy=(0,0), xytext=(10,10),textcoords="offset points",
                             bbox=dict(boxstyle="round", fc="w"),
