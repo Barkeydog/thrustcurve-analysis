@@ -8,10 +8,10 @@ import numpy as np
 
 # Load Data
 try:
-    with open('motors_under_640ns.json', 'r') as f:
+    with open('motors_all.json', 'r') as f:
         data = json.load(f)
 except FileNotFoundError:
-    print("Error: 'motors_under_640ns.json' not found. Run the extraction script first.")
+    print("Error: 'motors_all.json' not found. Run the extraction script first.")
     exit()
 
 # Extract Data Points
@@ -30,15 +30,42 @@ specific_impulse = [m['specificImpulseSec'] for m in data]
 class MotorVisApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("ThrustCurve Motor Analysis (< 640 Ns)")
-        self.geometry("1000x800")
+        self.title("ThrustCurve Motor Analysis (All Motors)")
+        self.geometry("1100x800") # Slightly wider for sidebar
 
-        # Main Container
-        container = ttk.Frame(self)
+        # Filter Toggles
+        self.show_low = tk.BooleanVar(value=True) # A-G
+        self.show_l1 = tk.BooleanVar(value=True)  # H-I
+        self.show_l2 = tk.BooleanVar(value=True)  # J-L
+        self.show_l3 = tk.BooleanVar(value=True)  # M-O
+
+        # Split into Sidebar and Main Content
+        main_layout = ttk.Frame(self)
+        main_layout.pack(fill=tk.BOTH, expand=True)
+        
+        sidebar = ttk.Frame(main_layout, width=150, padding=10)
+        sidebar.pack(side=tk.LEFT, fill=tk.Y)
+        
+        content_area = ttk.Frame(main_layout)
+        content_area.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+
+        # Sidebar Controls
+        ttk.Label(sidebar, text="Filters", font=('Helvetica', 12, 'bold')).pack(pady=5)
+        
+        def on_toggle():
+            self.refresh_charts()
+
+        ttk.Checkbutton(sidebar, text="Low Power (A-G)\n< 160 Ns", variable=self.show_low, command=on_toggle).pack(anchor='w', pady=2)
+        ttk.Checkbutton(sidebar, text="Level 1 (H-I)\n160-640 Ns", variable=self.show_l1, command=on_toggle).pack(anchor='w', pady=2)
+        ttk.Checkbutton(sidebar, text="Level 2 (J-L)\n640-5120 Ns", variable=self.show_l2, command=on_toggle).pack(anchor='w', pady=2)
+        ttk.Checkbutton(sidebar, text="Level 3 (M-O)\n> 5120 Ns", variable=self.show_l3, command=on_toggle).pack(anchor='w', pady=2)
+
+        # Graph Container
+        container = ttk.Frame(content_area)
         container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
-        # Navigation Frame
-        nav_frame = ttk.Frame(self)
+        
+        # Navigation
+        nav_frame = ttk.Frame(content_area)
         nav_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         self.frames = {}
@@ -61,10 +88,15 @@ class MotorVisApp(tk.Tk):
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
+    
+    def refresh_charts(self):
+        for frame in self.frames.values():
+            frame.redraw()
 
 class GraphPage(ttk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
+        self.controller = controller
         self.figure = plt.Figure(figsize=(8, 6), dpi=100)
         self.ax = self.figure.add_subplot(111)
         self.canvas = FigureCanvasTkAgg(self.figure, self)
@@ -78,6 +110,46 @@ class GraphPage(ttk.Frame):
         self.annot = None
         self.sc = None
         self.names = []
+        
+        self.x_data = None
+        self.y_data = None
+        self.filter_metric = None # Usually Total Impulse
+        self.labels_data = None
+        self.lbl_x = ""
+        self.lbl_y = ""
+        self.lbl_title = ""
+
+    def set_data(self, x, y, filter_data, labels, xlabel, ylabel, title):
+        self.x_data = np.array(x)
+        self.y_data = np.array(y)
+        self.filter_metric = np.array(filter_data)
+        self.labels_data = np.array(labels)
+        self.lbl_x = xlabel
+        self.lbl_y = ylabel
+        self.lbl_title = title
+        self.redraw()
+
+    def redraw(self):
+        if self.x_data is None: return
+        
+        # Build Filter Mask
+        mask = np.zeros(len(self.filter_metric), dtype=bool)
+        
+        if self.controller.show_low.get():
+            mask |= (self.filter_metric <= 160)
+        if self.controller.show_l1.get():
+            mask |= ((self.filter_metric > 160) & (self.filter_metric <= 640))
+        if self.controller.show_l2.get():
+            mask |= ((self.filter_metric > 640) & (self.filter_metric <= 5120))
+        if self.controller.show_l3.get():
+            mask |= (self.filter_metric > 5120)
+
+        # Apply Mask
+        x_filtered = self.x_data[mask]
+        y_filtered = self.y_data[mask]
+        labels_filtered = self.labels_data[mask]
+
+        self.plot_scatter(x_filtered, y_filtered, labels_filtered, self.lbl_x, self.lbl_y, self.lbl_title)
 
     def plot_scatter(self, x, y, labels, xlabel, ylabel, title):
         self.ax.clear()
@@ -89,41 +161,37 @@ class GraphPage(ttk.Frame):
         self.ax.grid(True, linestyle='--', alpha=0.7)
         
         # Calculate Regression and Sigma Curves
-        try:
-            x_arr = np.array(x)
-            y_arr = np.array(y)
-            
-            # Linear Fit (degree 1)
-            # y = mx + b
-            m, b = np.polyfit(x_arr, y_arr, 1)
-            
-            # Generate trendline points (sorted by x for clean line)
-            x_sort = np.sort(x_arr)
-            y_trend = m * x_sort + b
-            
-            # Predict values for original x to calculate residuals
-            y_pred = m * x_arr + b
-            residuals = y_arr - y_pred
-            
-            # Standard Deviation of residuals
-            std_dev = np.std(residuals)
-            
-            # Plot Trendline
-            self.ax.plot(x_sort, y_trend, color='black', linestyle='-', linewidth=1.5, label='Mean Trend')
-            
-            # Plot 1 Sigma (+/- 1 std dev)
-            self.ax.plot(x_sort, y_trend + std_dev, color='green', linestyle='--', linewidth=1, label='1 Sigma')
-            self.ax.plot(x_sort, y_trend - std_dev, color='green', linestyle='--', linewidth=1)
-            self.ax.plot([], [], color='green', linestyle='--', label='_nolegend_') # Dummy for legend if needed
-
-            # Plot 2 Sigma (+/- 2 std dev)
-            self.ax.plot(x_sort, y_trend + 2*std_dev, color='orange', linestyle=':', linewidth=1, label='2 Sigma')
-            self.ax.plot(x_sort, y_trend - 2*std_dev, color='orange', linestyle=':', linewidth=1)
-            
-            self.ax.legend()
-            
-        except Exception as e:
-            print(f"Error calculating regression: {e}")
+        if len(x) > 1: # Only if enough points
+            try:
+                x_arr = np.array(x)
+                y_arr = np.array(y)
+                
+                # Linear Fit (degree 1)
+                m, b = np.polyfit(x_arr, y_arr, 1)
+                
+                # Generate trendline points
+                x_sort = np.sort(x_arr)
+                y_trend = m * x_sort + b
+                
+                # Predict values for residuals
+                y_pred = m * x_arr + b
+                residuals = y_arr - y_pred
+                std_dev = np.std(residuals)
+                
+                # Plot Lines
+                self.ax.plot(x_sort, y_trend, color='black', linestyle='-', linewidth=1.5, label='Mean Trend')
+                
+                # 1 Sigma
+                self.ax.plot(x_sort, y_trend + std_dev, color='green', linestyle='--', linewidth=1, label='1 Sigma')
+                self.ax.plot(x_sort, y_trend - std_dev, color='green', linestyle='--', linewidth=1)
+                
+                # 2 Sigma
+                self.ax.plot(x_sort, y_trend + 2*std_dev, color='orange', linestyle=':', linewidth=1, label='2 Sigma')
+                self.ax.plot(x_sort, y_trend - 2*std_dev, color='orange', linestyle=':', linewidth=1)
+                
+                self.ax.legend()
+            except Exception as e:
+                print(f"Error calculating regression: {e}")
 
         # Create Annotation (hidden by default)
         self.annot = self.ax.annotate("", xy=(0,0), xytext=(10,10),textcoords="offset points",
@@ -151,17 +219,14 @@ class GraphPage(ttk.Frame):
                     self.canvas.draw_idle()
 
     def update_annot(self, ind):
-        if not self.names:
+        if len(self.names) == 0:
             return
             
-        # Get position of the first point listed in the event
         pos = self.sc.get_offsets()[ind["ind"][0]]
         self.annot.xy = pos
-        
-        # Get indices of all points being hovered
         indices = ind["ind"]
         
-        # Limit to first 5 names if multiple overlap to avoid huge tooltip
+        # Map indices back to filtered labels
         text = "\n".join([self.names[n] for n in indices[:5]])
         if len(indices) > 5:
             text += "\n..."
@@ -169,60 +234,51 @@ class GraphPage(ttk.Frame):
         self.annot.set_text(text)
         self.annot.get_bbox_patch().set_alpha(0.9)
 
-
     def plot_hist(self, data, xlabel, title, bins=20):
-        self.ax.clear()
-        self.ax.hist(data, bins=bins, color='skyblue', edgecolor='black')
-        self.ax.set_xlabel(xlabel)
-        self.ax.set_ylabel("Frequency")
-        self.ax.set_title(title)
-        self.canvas.draw()
-        # Clean up scatter interactions if previously used
-        self.sc = None
-        self.annot = None
+        # Deprecated / Not used in current scatter-only version
+        pass
 
 class GraphThrustWeight(GraphPage):
     title = "Thrust vs Weight"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-        # Create labels specifically for this graph
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.plot_scatter(total_weight, avg_thrust, labels, "Total Weight (g)", "Average Thrust (N)", "Thrust vs Total Weight")
+        self.set_data(total_weight, avg_thrust, total_impulse, labels, "Total Weight (g)", "Average Thrust (N)", "Thrust vs Total Weight")
 
 class GraphThrustSize(GraphPage):
     title = "Thrust vs Size"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.plot_scatter(volumes, avg_thrust, labels, "Approx Volume (mm^3)", "Average Thrust (N)", "Thrust vs Size (Volume)")
+        self.set_data(volumes, avg_thrust, total_impulse, labels, "Approx Volume (mm^3)", "Average Thrust (N)", "Thrust vs Size (Volume)")
 
 class GraphImpulseWeight(GraphPage):
     title = "Impulse vs Weight"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.plot_scatter(total_weight, total_impulse, labels, "Total Weight (g)", "Total Impulse (Ns)", "Impulse vs Total Weight")
+        self.set_data(total_weight, total_impulse, total_impulse, labels, "Total Weight (g)", "Total Impulse (Ns)", "Impulse vs Total Weight")
 
 class GraphImpulseSize(GraphPage):
     title = "Impulse vs Size"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.plot_scatter(volumes, total_impulse, labels, "Approx Volume (mm^3)", "Total Impulse (Ns)", "Impulse vs Size (Volume)")
+        self.set_data(volumes, total_impulse, total_impulse, labels, "Approx Volume (mm^3)", "Total Impulse (Ns)", "Impulse vs Size (Volume)")
 
 class GraphIsp(GraphPage):
     title = "Isp vs Impulse"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.plot_scatter(total_impulse, specific_impulse, labels, "Total Impulse (Ns)", "Specific Impulse (s)", "Specific Impulse vs Total Impulse")
+        self.set_data(total_impulse, specific_impulse, total_impulse, labels, "Total Impulse (Ns)", "Specific Impulse (s)", "Specific Impulse vs Total Impulse")
 
 class GraphDiameterImpulse(GraphPage):
     title = "Diameter vs Impulse"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.plot_scatter(diameters, total_impulse, labels, "Diameter (mm)", "Total Impulse (Ns)", "Diameter vs Total Impulse")
+        self.set_data(diameters, total_impulse, total_impulse, labels, "Diameter (mm)", "Total Impulse (Ns)", "Diameter vs Total Impulse")
 
 if __name__ == "__main__":
     app = MotorVisApp()

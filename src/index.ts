@@ -154,9 +154,9 @@ async function main() {
         console.log(`Found ${motorsUnder640.length} motors under 640 Ns.`);
         generateReports(motorsUnder640, '_under_640ns');
 
-        // Export to JSON for Python visualization
-        const jsonOutput = path.join(__dirname, '../motors_under_640ns.json');
-        fs.writeFileSync(jsonOutput, JSON.stringify(motorsUnder640, null, 2));
+        // Export to JSON for Python visualization (All Valid Motors)
+        const jsonOutput = path.join(__dirname, '../motors_all.json');
+        fs.writeFileSync(jsonOutput, JSON.stringify(validMotors, null, 2));
         console.log(`Exported JSON data: ${jsonOutput}`);
 
     } catch (error) {
