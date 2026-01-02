@@ -1,0 +1,87 @@
+ThrustCurve Top 10 Motor Analysis (Total Impulse) [_under_320ns]
+==================================================
+
+Top 10 Motors by Impulse / Weight Ratio (N-s/N)
+-----------------------------------------------
+1. Cesaroni Technology H225 (reload)
+   Ratio: 144.35
+   Impulse: 273.2 N-s, Weight: 193 g
+
+2. AeroTech H195 (SU)
+   Ratio: 122.21
+   Impulse: 236.09 N-s, Weight: 197 g
+
+3. AeroTech H169 (SU)
+   Ratio: 117.48
+   Impulse: 232.95 N-s, Weight: 202.2 g
+
+4. Ellis Mountain H275 (SU)
+   Ratio: 117.37
+   Impulse: 293.5 N-s, Weight: 255 g
+
+5. Rocketvision Flight-Star F32 (SU)
+   Ratio: 116.20
+   Impulse: 79.2 N-s, Weight: 69.5 g
+
+6. AeroTech G80 (SU)
+   Ratio: 108.91
+   Impulse: 136.6 N-s, Weight: 127.90000000000002 g
+
+7. AeroTech H135 (SU)
+   Ratio: 108.63
+   Impulse: 225.84 N-s, Weight: 212 g
+
+8. Estes Industries G80 (SU)
+   Ratio: 108.57
+   Impulse: 136.6 N-s, Weight: 128.3 g
+
+9. AeroTech G138 (reload)
+   Ratio: 108.24
+   Impulse: 157.1 N-s, Weight: 148 g
+
+10. AeroTech H182 (SU)
+   Ratio: 107.39
+   Impulse: 218 N-s, Weight: 207 g
+
+Top 10 Motors by Impulse / Size Ratio (N-s/mm^3)
+------------------------------------------------
+1. Loki Research H160 (reload)
+   Ratio: 1.9603e-3
+   Impulse: 260.12 N-s, Size: 38mm x 117mm
+
+2. AeroTech G138 (reload)
+   Ratio: 1.9181e-3
+   Impulse: 157.1 N-s, Size: 29mm x 124mm
+
+3. Loki Research H90 (reload)
+   Ratio: 1.7663e-3
+   Impulse: 234.37 N-s, Size: 38mm x 117mm
+
+4. AeroTech H195 (SU)
+   Ratio: 1.7607e-3
+   Impulse: 236.09 N-s, Size: 29mm x 203mm
+
+5. AeroTech G80 (SU)
+   Ratio: 1.6678e-3
+   Impulse: 136.6 N-s, Size: 29mm x 124mm
+
+6. AeroTech H182 (SU)
+   Ratio: 1.6258e-3
+   Impulse: 218 N-s, Size: 29mm x 203mm
+
+7. Ellis Mountain H275 (SU)
+   Ratio: 1.6158e-3
+   Impulse: 293.5 N-s, Size: 29mm x 275mm
+
+8. Estes Industries G80 (SU)
+   Ratio: 1.6157e-3
+   Impulse: 136.6 N-s, Size: 29mm x 128mm
+
+9. AeroTech H169 (SU)
+   Ratio: 1.5980e-3
+   Impulse: 232.95 N-s, Size: 29mm x 220.70000000000002mm
+
+10. AeroTech H135 (SU)
+   Ratio: 1.5829e-3
+   Impulse: 225.84 N-s, Size: 29mm x 216mm
+

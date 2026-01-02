@@ -1,0 +1,87 @@
+ThrustCurve Top 10 Motor Analysis (Thrust) [_under_320ns]
+==========================================
+
+Top 10 Motors by Thrust / Weight Ratio (N/N)
+--------------------------------------------
+1. AeroTech H999 (reload)
+   Ratio: 307.76
+   Thrust: 999 N, Weight: 331 g
+
+2. AeroTech H669 (reload)
+   Ratio: 263.59
+   Thrust: 651.4 N, Weight: 252 g
+
+3. Cesaroni Technology F240 (reload)
+   Ratio: 262.37
+   Thrust: 236.2 N, Weight: 91.8 g
+
+4. Cesaroni Technology H410 (reload)
+   Ratio: 228.53
+   Thrust: 409 N, Weight: 182.5 g
+
+5. AeroTech H550 (SU)
+   Ratio: 178.13
+   Thrust: 552 N, Weight: 316 g
+
+6. Cesaroni Technology G250 (reload)
+   Ratio: 175.87
+   Thrust: 243.7 N, Weight: 141.3 g
+
+7. AeroTech G339 (reload)
+   Ratio: 173.26
+   Thrust: 307.53 N, Weight: 181 g
+
+8. Cesaroni Technology E75 (reload)
+   Ratio: 145.70
+   Thrust: 74.3 N, Weight: 52 g
+
+9. Cesaroni Technology H400 (reload)
+   Ratio: 142.39
+   Thrust: 396 N, Weight: 283.6 g
+
+10. AeroTech G142 (SU)
+   Ratio: 141.41
+   Thrust: 135.9 N, Weight: 98 g
+
+Top 10 Motors by Thrust / Size Ratio (N/mm^3)
+---------------------------------------------
+1. AeroTech H999 (reload)
+   Ratio: 4.3392e-3
+   Thrust: 999 N, Size: 38mm x 203mm
+
+2. Cesaroni Technology F240 (reload)
+   Ratio: 3.9257e-3
+   Thrust: 236.2 N, Size: 24mm x 133mm
+
+3. AeroTech H669 (reload)
+   Ratio: 3.7787e-3
+   Thrust: 651.4 N, Size: 38mm x 152mm
+
+4. Cesaroni Technology H410 (reload)
+   Ratio: 3.3113e-3
+   Thrust: 409 N, Size: 29mm x 187mm
+
+5. AeroTech G339 (reload)
+   Ratio: 2.7955e-3
+   Thrust: 307.53 N, Size: 38mm x 97mm
+
+6. Cesaroni Technology G250 (reload)
+   Ratio: 2.5983e-3
+   Thrust: 243.7 N, Size: 29mm x 142mm
+
+7. Cesaroni Technology E75 (reload)
+   Ratio: 2.3803e-3
+   Thrust: 74.3 N, Size: 24mm x 69mm
+
+8. AeroTech H550 (SU)
+   Ratio: 2.3627e-3
+   Thrust: 552 N, Size: 38mm x 206mm
+
+9. Cesaroni Technology F120 (reload)
+   Ratio: 1.9064e-3
+   Thrust: 123.4 N, Size: 29mm x 98mm
+
+10. Cesaroni Technology H399 (reload)
+   Ratio: 1.8891e-3
+   Thrust: 399.3 N, Size: 29mm x 320mm
+

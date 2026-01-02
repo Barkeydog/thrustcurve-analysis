@@ -1,4 +1,4 @@
 node_modules/
-*.txt
-*.json
+# *.txt
+# *.json
 __pycache__/

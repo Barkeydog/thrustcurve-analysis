@@ -1,0 +1,87 @@
+ThrustCurve Top 10 Motor Analysis (Total Impulse)
+==================================================
+
+Top 10 Motors by Impulse / Weight Ratio (N-s/N)
+-----------------------------------------------
+1. R.A.T.T. Works M900 (hybrid)
+   Ratio: 200.45
+   Impulse: 6463.49 N-s, Weight: 3288 g
+
+2. R.A.T.T. Works L600 (hybrid)
+   Ratio: 146.10
+   Impulse: 3152 N-s, Weight: 2200 g
+
+3. Cesaroni Technology H225 (reload)
+   Ratio: 144.35
+   Impulse: 273.2 N-s, Weight: 193 g
+
+4. Cesaroni Technology N5800 (reload)
+   Ratio: 138.56
+   Impulse: 20145.7 N-s, Weight: 14826 g
+
+5. Ellis Mountain J228 (SU)
+   Ratio: 135.55
+   Impulse: 1115.3 N-s, Weight: 839 g
+
+6. Animal Motor Works M1850 (reload)
+   Ratio: 134.15
+   Impulse: 5920 N-s, Weight: 4500 g
+
+7. Ellis Mountain M1000 (reload)
+   Ratio: 133.83
+   Impulse: 7320 N-s, Weight: 5577.6 g
+
+8. AeroTech N4800 (reload)
+   Ratio: 133.54
+   Impulse: 19361 N-s, Weight: 14784 g
+
+9. Cesaroni Technology O25000 (SU)
+   Ratio: 133.29
+   Impulse: 30794 N-s, Weight: 23558 g
+
+10. Loki Research N5500 (reload)
+   Ratio: 131.37
+   Impulse: 19137 N-s, Weight: 14855 g
+
+Top 10 Motors by Impulse / Size Ratio (N-s/mm^3)
+------------------------------------------------
+1. Cesaroni Technology I165 (reload)
+   Ratio: 3.2413e-3
+   Impulse: 512.2 N-s, Size: 54mm x 69mm
+
+2. AeroTech K62 (SU)
+   Ratio: 2.2924e-3
+   Impulse: 1438.5 N-s, Size: 54mm x 274mm
+
+3. Cesaroni Technology O3400 (reload)
+   Ratio: 2.2537e-3
+   Impulse: 21062.2 N-s, Size: 98mm x 1239mm
+
+4. Cesaroni Technology J357 (reload)
+   Ratio: 2.2302e-3
+   Impulse: 657.62 N-s, Size: 38mm x 260mm
+
+5. Cesaroni Technology M2245 (reload)
+   Ratio: 2.2032e-3
+   Impulse: 9976.7 N-s, Size: 75mm x 1025mm
+
+6. Loki Research L1040 (reload)
+   Ratio: 2.1992e-3
+   Impulse: 3707 N-s, Size: 54mm x 736mm
+
+7. Cesaroni Technology K1200 (reload)
+   Ratio: 2.1767e-3
+   Impulse: 2014 N-s, Size: 54mm x 404mm
+
+8. Cesaroni Technology N5800 (reload)
+   Ratio: 2.1556e-3
+   Impulse: 20145.7 N-s, Size: 98mm x 1239mm
+
+9. Loki Research K627 (reload)
+   Ratio: 2.1413e-3
+   Impulse: 1519 N-s, Size: 38mm x 625.48mm
+
+10. AeroTech N4800 (reload)
+   Ratio: 2.1372e-3
+   Impulse: 19361 N-s, Size: 98mm x 1201mm
+

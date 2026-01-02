@@ -1,0 +1,87 @@
+ThrustCurve Top 10 Motor Analysis (Total Impulse) [_under_640ns]
+==================================================
+
+Top 10 Motors by Impulse / Weight Ratio (N-s/N)
+-----------------------------------------------
+1. Cesaroni Technology H225 (reload)
+   Ratio: 144.35
+   Impulse: 273.2 N-s, Weight: 193 g
+
+2. AeroTech H195 (SU)
+   Ratio: 122.21
+   Impulse: 236.09 N-s, Weight: 197 g
+
+3. AeroTech I132 (SU)
+   Ratio: 121.61
+   Impulse: 610.7 N-s, Weight: 512.064 g
+
+4. AeroTech H169 (SU)
+   Ratio: 117.48
+   Impulse: 232.95 N-s, Weight: 202.2 g
+
+5. Ellis Mountain H275 (SU)
+   Ratio: 117.37
+   Impulse: 293.5 N-s, Weight: 255 g
+
+6. Rocketvision Flight-Star F32 (SU)
+   Ratio: 116.20
+   Impulse: 79.2 N-s, Weight: 69.5 g
+
+7. Cesaroni Technology I240 (reload)
+   Ratio: 112.59
+   Impulse: 556 N-s, Weight: 503.552 g
+
+8. AeroTech I435 (reload)
+   Ratio: 111.99
+   Impulse: 568.9 N-s, Weight: 518 g
+
+9. AeroTech I205 (SU)
+   Ratio: 111.68
+   Impulse: 345 N-s, Weight: 315 g
+
+10. AeroTech I284 (reload)
+   Ratio: 111.48
+   Impulse: 607.3 N-s, Weight: 555.52 g
+
+Top 10 Motors by Impulse / Size Ratio (N-s/mm^3)
+------------------------------------------------
+1. Cesaroni Technology I165 (reload)
+   Ratio: 3.2413e-3
+   Impulse: 512.2 N-s, Size: 54mm x 69mm
+
+2. Loki Research H160 (reload)
+   Ratio: 1.9603e-3
+   Impulse: 260.12 N-s, Size: 38mm x 117mm
+
+3. AeroTech G138 (reload)
+   Ratio: 1.9181e-3
+   Impulse: 157.1 N-s, Size: 29mm x 124mm
+
+4. AeroTech I59 (reload)
+   Ratio: 1.8471e-3
+   Impulse: 486 N-s, Size: 38mm x 232mm
+
+5. AeroTech I49 (reload)
+   Ratio: 1.8354e-3
+   Impulse: 383 N-s, Size: 38mm x 184mm
+
+6. AeroTech I284 (reload)
+   Ratio: 1.7909e-3
+   Impulse: 607.3 N-s, Size: 38mm x 299mm
+
+7. Loki Research H90 (reload)
+   Ratio: 1.7663e-3
+   Impulse: 234.37 N-s, Size: 38mm x 117mm
+
+8. AeroTech H195 (SU)
+   Ratio: 1.7607e-3
+   Impulse: 236.09 N-s, Size: 29mm x 203mm
+
+9. AeroTech I205 (SU)
+   Ratio: 1.7125e-3
+   Impulse: 345 N-s, Size: 29mm x 305mm
+
+10. AeroTech I435 (reload)
+   Ratio: 1.6777e-3
+   Impulse: 568.9 N-s, Size: 38mm x 299mm
+

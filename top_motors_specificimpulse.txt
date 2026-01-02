@@ -1,0 +1,45 @@
+ThrustCurve Top 10 Motor Analysis (Specific Impulse)
+====================================================
+
+Top 10 Motors by Specific Impulse (Isp)
+---------------------------------------
+1. Cesaroni Technology M1670 (reload)
+   Isp: 289.24 s
+   Impulse: 6041.7 N-s, Prop Weight: 2130 g
+
+2. AeroTech H135 (SU)
+   Isp: 280.84 s
+   Impulse: 225.84 N-s, Prop Weight: 82 g
+
+3. AeroTech K400 (SU)
+   Isp: 269.72 s
+   Impulse: 1304 N-s, Prop Weight: 493 g
+
+4. Cesaroni Technology J316 (reload)
+   Isp: 260.32 s
+   Impulse: 654.3 N-s, Prop Weight: 256.3 g
+
+5. Cesaroni Technology M1520 (reload)
+   Isp: 259.26 s
+   Impulse: 7579 N-s, Prop Weight: 2981 g
+
+6. Ellis Mountain J148 (reload)
+   Isp: 257.90 s
+   Impulse: 903.4 N-s, Prop Weight: 357.2 g
+
+7. AeroTech F24 (reload)
+   Isp: 253.91 s
+   Impulse: 47.31 N-s, Prop Weight: 19 g
+
+8. AeroTech M2050 (reload)
+   Isp: 246.99 s
+   Impulse: 5493.35 N-s, Prop Weight: 2268 g
+
+9. AeroTech L1940 (reload)
+   Isp: 241.89 s
+   Impulse: 4329.2 N-s, Prop Weight: 1825 g
+
+10. Cesaroni Technology E31 (reload)
+   Isp: 239.77 s
+   Impulse: 26.1 N-s, Prop Weight: 11.1 g
+
