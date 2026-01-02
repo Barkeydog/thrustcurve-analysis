@@ -15,17 +15,36 @@ except FileNotFoundError:
     exit()
 
 # Extract Data Points
-names = [m['commonName'] for m in data]
-manufacturers = [m['manufacturer'] for m in data]
-avg_thrust = [m['avgThrustN'] for m in data]
-total_impulse = [m['totImpulseNs'] for m in data]
-total_weight = [m['totalWeightG'] for m in data]
-# Calculate Size (Volume approx) for plotting
-# Volume = Pi * (d/2)^2 * L
-diameters = [m['diameter'] for m in data]
-lengths = [m['length'] for m in data]
-volumes = [(3.14159 * (d/2)**2 * l) for d, l in zip(diameters, lengths)]
-specific_impulse = [m['specificImpulseSec'] for m in data]
+names = []
+manufacturers = []
+avg_thrust = []
+total_impulse = []
+total_weight = []
+diameters = []
+lengths = []
+volumes = []
+specific_impulse = []
+burn_times = []
+
+for m in data:
+    avg_thrust.append(m['avgThrustN'])
+    total_impulse.append(m['totImpulseNs'])
+    total_weight.append(m['totalWeightG'])
+    
+    # Volume calculation
+    d = m['diameter']
+    l = m['length']
+    r = (d / 2)
+    vol = 3.14159 * (r*r) * l
+    volumes.append(vol)
+    
+    specific_impulse.append(m['specificImpulseSec'])
+    burn_times.append(m.get('burnTimeS', m['totImpulseNs'] / m['avgThrustN'] if m['avgThrustN'] > 0 else 0))
+    diameters.append(d)
+    lengths.append(l) # Keep lengths for completeness, though not directly used after volume calc
+    
+    names.append(m['commonName'])
+    manufacturers.append(m['manufacturer'])
 
 class MotorVisApp(tk.Tk):
     def __init__(self):
@@ -71,7 +90,7 @@ class MotorVisApp(tk.Tk):
         self.frames = {}
         
         # Create Frames for each Graph
-        for F in (GraphThrustWeight, GraphThrustSize, GraphImpulseWeight, GraphImpulseSize, GraphIsp, GraphDiameterImpulse):
+        for F in (GraphThrustWeight, GraphThrustSize, GraphImpulseWeight, GraphImpulseSize, GraphIsp, GraphDiameterImpulse, GraphBurnTimeImpulse):
             frame = F(container, self)
             self.frames[F] = frame
             frame.grid(row=0, column=0, sticky="nsew")
@@ -279,6 +298,13 @@ class GraphDiameterImpulse(GraphPage):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
         self.set_data(diameters, total_impulse, total_impulse, labels, "Diameter (mm)", "Total Impulse (Ns)", "Diameter vs Total Impulse")
+
+class GraphBurnTimeImpulse(GraphPage):
+    title = "Impulse vs Burn Time"
+    def __init__(self, parent, controller):
+        super().__init__(parent, controller)
+        labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
+        self.set_data(burn_times, total_impulse, total_impulse, labels, "Burn Time (s)", "Total Impulse (Ns)", "Total Impulse vs Burn Time")
 
 if __name__ == "__main__":
     app = MotorVisApp()

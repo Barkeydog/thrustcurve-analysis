@@ -66,6 +66,9 @@ async function main() {
                 const propWeightKg = motor.propWeightG / 1000;
                 const propWeightN = propWeightKg * 9.80665;
                 const specificImpulseSec = motor.totImpulseNs / propWeightN;
+                // --- Burn Time ---
+                // Burn Time = Total Impulse / Average Thrust
+                const burnTimeS = motor.totImpulseNs / motor.avgThrustN;
                 validMotors.push({
                     id: motor.motorId,
                     designation: motor.designation || 'N/A',
@@ -76,6 +79,7 @@ async function main() {
                     impulseToWeightRatio: impulseToWeightRatio,
                     impulseToSizeRatio: impulseToSizeRatio,
                     specificImpulseSec: specificImpulseSec,
+                    burnTimeS: burnTimeS,
                     avgThrustN: motor.avgThrustN,
                     totImpulseNs: motor.totImpulseNs,
                     totalWeightG: motor.totalWeightG,
