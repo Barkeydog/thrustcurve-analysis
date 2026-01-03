@@ -3,7 +3,12 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+import plotly.graph_objects as go
+import numpy as np
 import json
+import requests
+import base64
+import io
 
 # Set Page Layout
 st.set_page_config(layout="wide", page_title="ThrustCurve Analysis")
@@ -29,6 +34,7 @@ def load_data():
                 burn_time = m['totImpulseNs'] / m['avgThrustN']
 
             processed_data.append({
+                "id": m.get('motorId', m.get('id')), # Handle both naming conventions if present
                 "Name": m['commonName'],
                 "Manufacturer": m['manufacturer'],
                 "Thrust (N)": m['avgThrustN'],
@@ -42,10 +48,102 @@ def load_data():
                 "Label": f"{m['manufacturer']} {m['commonName']}"
             })
         
-        return pd.DataFrame(processed_data)
+        # Create lookup dictionary for full details
+        # Using the ID as key. Ensure 'id' exists in your JSON.
+        # If your JSON keys match the TS interface, it should have 'id' or 'motorId'
+        motor_lookup = {m.get('motorId', m.get('id')): m for m in data}
+
+        return pd.DataFrame(processed_data), motor_lookup
     except FileNotFoundError:
         st.error("Data file 'motors_all.json' not found. Please regenerate data.")
-        return pd.DataFrame()
+        return pd.DataFrame(), {}
+
+@st.cache_data
+def fetch_thrust_curve(motor_id):
+    """
+    Fetches the thrust curve data for a given motor ID from ThrustCurve.org.
+    Parses RASP format.
+    Returns a DataFrame with 'Time (s)' and 'Thrust (N)'.
+    """
+    url = "https://www.thrustcurve.org/api/v1/download.json"
+    payload = {
+        "motorIds": [motor_id]
+    }
+    headers = {'Content-Type': 'application/json'}
+
+    try:
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
+        response.raise_for_status()
+        data = response.json()
+        
+        results = data.get('results', [])
+        if not results:
+            return None
+
+        # Look for a RASP format file
+        rasp_data = None
+        for res in results:
+            if res.get('format') == 'RASP':
+                rasp_data = res.get('data')
+                break
+        
+        # If no RASP, take the first one available and hope it works or add more parsers
+        if rasp_data is None and results:
+             if 'data' in results[0]:
+                 rasp_data = results[0]['data']
+
+        if not rasp_data:
+            return None
+
+        # Decode Base64
+        decoded_bytes = base64.b64decode(rasp_data)
+        decoded_str = decoded_bytes.decode('utf-8', errors='ignore')
+        
+        # Parse RASP
+        # Lines starting with ; are comments
+        # First data line is motor info
+        # Subsequent lines are: time thrust [mass]
+        
+        times = []
+        thrusts = []
+        
+        lines = decoded_str.splitlines()
+        header_parsed = False
+        
+        for line in lines:
+            line = line.strip()
+            if not line: 
+                continue
+            if line.startswith(';'): 
+                continue
+            
+            parts = line.split()
+            
+            if not header_parsed:
+                # The first non-comment line is the motor header. We skip it to get to data.
+                # Format: name diameter length delays propellant_weight total_weight manufacturer
+                # We assume it has at least 3 parts to be a valid header line?
+                if len(parts) >= 3:
+                   header_parsed = True
+                continue
+            
+            # Data Points
+            try:
+                t = float(parts[0])
+                f = float(parts[1])
+                times.append(t)
+                thrusts.append(f)
+            except (ValueError, IndexError):
+                continue
+                
+        if not times:
+            return None
+            
+        return pd.DataFrame({'Time (s)': times, 'Thrust (N)': thrusts})
+
+    except Exception as e:
+        print(f"Error fetching thrust curve: {e}")
+        return None
 
 def plot_with_sigma(df, x_col, y_col, title):
     if df.empty:
@@ -105,7 +203,7 @@ def plot_with_sigma(df, x_col, y_col, title):
 # --- Main Application ---
 st.title("ThrustCurve Motor Analysis (Web)")
 
-df = load_data()
+df, motor_lookup = load_data()
 
 if not df.empty:
     # Sidebar Filters
@@ -163,17 +261,46 @@ if not df.empty:
     if selected_motor is not None:
         with st.sidebar:
             st.divider()
-            st.header("Selected Motor Details")
-            st.subheader(f"{selected_motor['Manufacturer']} {selected_motor['Name']}")
             
-            # Display stats in a clean format
-            st.write(f"**Thrust:** {selected_motor['Thrust (N)']:.2f} N")
-            st.write(f"**Impulse:** {selected_motor['Impulse (Ns)']:.2f} Ns")
-            st.write(f"**Burn Time:** {selected_motor['Burn Time (s)']:.2f} s")
-            st.write(f"**ISP:** {selected_motor['Isp (s)']:.2f} s")
-            st.write(f"**Weight:** {selected_motor['Weight (g)']:.2f} g")
-            st.write(f"**Diameter:** {selected_motor['Diameter (mm)']} mm")
-            st.write(f"**Length:** {selected_motor['Length (mm)']} mm")
+            # --- Fetch & Plot Thrust Curve ---
+            st.header("Thrust Curve")
             
-            details_expander = st.expander("Raw Data")
-            details_expander.json(selected_motor.to_dict())
+            # Use the ID to fetch data
+            if 'id' in selected_motor:
+                mid = selected_motor['id']
+                curve_df = fetch_thrust_curve(mid)
+                
+                if curve_df is not None and not curve_df.empty:
+                    # Plot using Plotly for consistency/interactivity
+                    fig_curve = px.line(curve_df, x='Time (s)', y='Thrust (N)', title=f"Thrust Curve: {selected_motor['Name']}")
+                    st.plotly_chart(fig_curve, use_container_width=True)
+                else:
+                    st.info("No thrust curve data available for this motor.")
+            else:
+                 st.warning("Motor ID not found, cannot fetch curve.")
+
+            st.divider()
+            st.header("Full Specifications")
+            # Get full details from lookup
+            full_details = selected_motor.to_dict() # Fallback to dataframe row
+            if 'id' in selected_motor:
+                full_details = motor_lookup.get(selected_motor['id'], full_details)
+
+            # Display key metrics at top
+            st.subheader(f"{full_details.get('manufacturer', 'Unknown')} {full_details.get('commonName', 'Unknown')}")
+            
+            col_a, col_b = st.columns(2)
+            with col_a:
+                st.write(f"**Thrust:** {full_details.get('avgThrustN', 'N/A')} N")
+                st.write(f"**Impulse:** {full_details.get('totImpulseNs', 'N/A')} Ns")
+                st.write(f"**Burn Time:** {full_details.get('burnTimeS', 'N/A')} s")
+            with col_b:
+                st.write(f"**Weight:** {full_details.get('totalWeightG', 'N/A')} g")
+                st.write(f"**Size:** {full_details.get('diameter', 'N/A')} x {full_details.get('length', 'N/A')} mm")
+                st.write(f"**ISP:** {full_details.get('specificImpulseSec', 'N/A')} s")
+            
+            # Expandable full JSON
+            with st.expander("See All Specs"):
+                # Format specific keys nicely if needed, or just dump dictionary
+                # Filter out huge lists if any exist in the future
+                st.json(full_details)

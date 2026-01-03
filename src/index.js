@@ -70,6 +70,7 @@ async function main() {
                 // Burn Time = Total Impulse / Average Thrust
                 const burnTimeS = motor.totImpulseNs / motor.avgThrustN;
                 validMotors.push({
+                    ...motor, // Include all original fields
                     id: motor.motorId,
                     designation: motor.designation || 'N/A',
                     manufacturer: motor.manufacturer || 'Unknown',
