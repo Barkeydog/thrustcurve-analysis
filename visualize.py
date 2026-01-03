@@ -24,7 +24,9 @@ diameters = []
 lengths = []
 volumes = []
 specific_impulse = []
+specific_impulse = []
 burn_times = []
+indices = []
 
 for m in data:
     avg_thrust.append(m['avgThrustN'])
@@ -45,6 +47,8 @@ for m in data:
     
     names.append(m['commonName'])
     manufacturers.append(m['manufacturer'])
+    indices.append(len(names) - 1)
+
 
 class MotorVisApp(tk.Tk):
     def __init__(self):
@@ -134,15 +138,20 @@ class GraphPage(ttk.Frame):
         self.y_data = None
         self.filter_metric = None # Usually Total Impulse
         self.labels_data = None
+        self.labels_data = None
+        self.indices_data = None
         self.lbl_x = ""
         self.lbl_y = ""
         self.lbl_title = ""
 
-    def set_data(self, x, y, filter_data, labels, xlabel, ylabel, title):
+        self.canvas.mpl_connect("button_press_event", self.on_click)
+
+    def set_data(self, x, y, filter_data, labels, indices, xlabel, ylabel, title):
         self.x_data = np.array(x)
         self.y_data = np.array(y)
         self.filter_metric = np.array(filter_data)
         self.labels_data = np.array(labels)
+        self.indices_data = np.array(indices)
         self.lbl_x = xlabel
         self.lbl_y = ylabel
         self.lbl_title = title
@@ -167,6 +176,7 @@ class GraphPage(ttk.Frame):
         x_filtered = self.x_data[mask]
         y_filtered = self.y_data[mask]
         labels_filtered = self.labels_data[mask]
+        self.indices_filtered = self.indices_data[mask]
 
         self.plot_scatter(x_filtered, y_filtered, labels_filtered, self.lbl_x, self.lbl_y, self.lbl_title)
 
@@ -257,54 +267,102 @@ class GraphPage(ttk.Frame):
         # Deprecated / Not used in current scatter-only version
         pass
 
+    def on_click(self, event):
+        if self.sc is None:
+            return
+        if event.inaxes != self.ax:
+            return
+
+        cont, ind = self.sc.contains(event)
+        if cont:
+            # Get the first point clicked
+            idx_in_filtered = ind["ind"][0]
+            if hasattr(self, 'indices_filtered'):
+                original_index = self.indices_filtered[idx_in_filtered]
+                self.show_details_popup(original_index)
+
+    def show_details_popup(self, index):
+        motor = data[index]
+        
+        popup = tk.Toplevel(self.controller)
+        popup.title(f"{motor['manufacturer']} {motor['commonName']}")
+        popup.geometry("400x500")
+        
+        # Create a scrollable frame
+        container = ttk.Frame(popup)
+        canvas = tk.Canvas(container)
+        scrollbar = ttk.Scrollbar(container, orient="vertical", command=canvas.yview)
+        scrollable_frame = ttk.Frame(canvas)
+
+        scrollable_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        container.pack(fill="both", expand=True)
+        canvas.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Populate data
+        row = 0
+        for key, value in motor.items():
+            ttk.Label(scrollable_frame, text=key, font=('Helvetica', 10, 'bold')).grid(row=row, column=0, sticky="w", padx=5, pady=2)
+            ttk.Label(scrollable_frame, text=str(value), wraplength=250).grid(row=row, column=1, sticky="w", padx=5, pady=2)
+            row += 1
+
 class GraphThrustWeight(GraphPage):
     title = "Thrust vs Weight"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.set_data(total_weight, avg_thrust, total_impulse, labels, "Total Weight (g)", "Average Thrust (N)", "Thrust vs Total Weight")
+        self.set_data(total_weight, avg_thrust, total_impulse, labels, indices, "Total Weight (g)", "Average Thrust (N)", "Thrust vs Total Weight")
 
 class GraphThrustSize(GraphPage):
     title = "Thrust vs Size"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.set_data(volumes, avg_thrust, total_impulse, labels, "Approx Volume (mm^3)", "Average Thrust (N)", "Thrust vs Size (Volume)")
+        self.set_data(volumes, avg_thrust, total_impulse, labels, indices, "Approx Volume (mm^3)", "Average Thrust (N)", "Thrust vs Size (Volume)")
 
 class GraphImpulseWeight(GraphPage):
     title = "Impulse vs Weight"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.set_data(total_weight, total_impulse, total_impulse, labels, "Total Weight (g)", "Total Impulse (Ns)", "Impulse vs Total Weight")
+        self.set_data(total_weight, total_impulse, total_impulse, labels, indices, "Total Weight (g)", "Total Impulse (Ns)", "Impulse vs Total Weight")
 
 class GraphImpulseSize(GraphPage):
     title = "Impulse vs Size"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.set_data(volumes, total_impulse, total_impulse, labels, "Approx Volume (mm^3)", "Total Impulse (Ns)", "Impulse vs Size (Volume)")
+        self.set_data(volumes, total_impulse, total_impulse, labels, indices, "Approx Volume (mm^3)", "Total Impulse (Ns)", "Impulse vs Size (Volume)")
 
 class GraphIsp(GraphPage):
     title = "Isp vs Impulse"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.set_data(total_impulse, specific_impulse, total_impulse, labels, "Total Impulse (Ns)", "Specific Impulse (s)", "Specific Impulse vs Total Impulse")
+        self.set_data(total_impulse, specific_impulse, total_impulse, labels, indices, "Total Impulse (Ns)", "Specific Impulse (s)", "Specific Impulse vs Total Impulse")
 
 class GraphDiameterImpulse(GraphPage):
     title = "Diameter vs Impulse"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.set_data(diameters, total_impulse, total_impulse, labels, "Diameter (mm)", "Total Impulse (Ns)", "Diameter vs Total Impulse")
+        self.set_data(diameters, total_impulse, total_impulse, labels, indices, "Diameter (mm)", "Total Impulse (Ns)", "Diameter vs Total Impulse")
 
 class GraphBurnTimeImpulse(GraphPage):
     title = "Impulse vs Burn Time"
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
         labels = [f"{n} ({m})" for n, m in zip(names, manufacturers)]
-        self.set_data(burn_times, total_impulse, total_impulse, labels, "Burn Time (s)", "Total Impulse (Ns)", "Total Impulse vs Burn Time")
+        self.set_data(burn_times, total_impulse, total_impulse, labels, indices, "Burn Time (s)", "Total Impulse (Ns)", "Total Impulse vs Burn Time")
 
 if __name__ == "__main__":
     app = MotorVisApp()
