@@ -50,7 +50,9 @@ def load_data():
 def plot_with_sigma(df, x_col, y_col, title):
     if df.empty:
         st.warning(f"No data available for {title}")
-        return
+        return None
+
+    # Basic Scatter
 
     # Basic Scatter
     fig = px.scatter(
@@ -96,7 +98,8 @@ def plot_with_sigma(df, x_col, y_col, title):
         except Exception as e:
             st.error(f"Error converting data for regression: {e}")
 
-    st.plotly_chart(fig, use_container_width=True)
+    event = st.plotly_chart(fig, use_container_width=True, on_select="rerun", selection_mode="points", key=title)
+    return event
 
 
 # --- Main Application ---
@@ -131,14 +134,46 @@ if not df.empty:
     
     # Graphs Layout
     col1, col2 = st.columns(2)
+    
+    events = []
 
     with col1:
-        plot_with_sigma(filtered_df, "Weight (g)", "Thrust (N)", "Thrust vs Weight")
-        plot_with_sigma(filtered_df, "Weight (g)", "Impulse (Ns)", "Impulse vs Weight")
-        plot_with_sigma(filtered_df, "Impulse (Ns)", "Isp (s)", "Specific Impulse vs Total Impulse")
-        plot_with_sigma(filtered_df, "Burn Time (s)", "Impulse (Ns)", "Impulse vs Burn Time")
+        events.append(plot_with_sigma(filtered_df, "Weight (g)", "Thrust (N)", "Thrust vs Weight"))
+        events.append(plot_with_sigma(filtered_df, "Weight (g)", "Impulse (Ns)", "Impulse vs Weight"))
+        events.append(plot_with_sigma(filtered_df, "Impulse (Ns)", "Isp (s)", "Specific Impulse vs Total Impulse"))
+        events.append(plot_with_sigma(filtered_df, "Burn Time (s)", "Impulse (Ns)", "Impulse vs Burn Time"))
 
     with col2:
-        plot_with_sigma(filtered_df, "Volume (mm3)", "Thrust (N)", "Thrust vs Size (Volume)")
-        plot_with_sigma(filtered_df, "Volume (mm3)", "Impulse (Ns)", "Impulse vs Size (Volume)")
-        plot_with_sigma(filtered_df, "Diameter (mm)", "Impulse (Ns)", "Diameter vs Impulse")
+        events.append(plot_with_sigma(filtered_df, "Volume (mm3)", "Thrust (N)", "Thrust vs Size (Volume)"))
+        events.append(plot_with_sigma(filtered_df, "Volume (mm3)", "Impulse (Ns)", "Impulse vs Size (Volume)"))
+        events.append(plot_with_sigma(filtered_df, "Diameter (mm)", "Impulse (Ns)", "Diameter vs Impulse"))
+
+    # Handle Selections
+    selected_motor = None
+    for event in events:
+        if event and event.selection and len(event.selection.points) > 0:
+            # Get the index relative to the filtered dataframe
+            try:
+                point_index = event.selection.points[0].point_index
+                selected_motor = filtered_df.iloc[point_index]
+                break # Show first selection found
+            except Exception as e:
+                st.warning(f"Error retrieving selection: {e}")
+
+    if selected_motor is not None:
+        with st.sidebar:
+            st.divider()
+            st.header("Selected Motor Details")
+            st.subheader(f"{selected_motor['Manufacturer']} {selected_motor['Name']}")
+            
+            # Display stats in a clean format
+            st.write(f"**Thrust:** {selected_motor['Thrust (N)']:.2f} N")
+            st.write(f"**Impulse:** {selected_motor['Impulse (Ns)']:.2f} Ns")
+            st.write(f"**Burn Time:** {selected_motor['Burn Time (s)']:.2f} s")
+            st.write(f"**ISP:** {selected_motor['Isp (s)']:.2f} s")
+            st.write(f"**Weight:** {selected_motor['Weight (g)']:.2f} g")
+            st.write(f"**Diameter:** {selected_motor['Diameter (mm)']} mm")
+            st.write(f"**Length:** {selected_motor['Length (mm)']} mm")
+            
+            details_expander = st.expander("Raw Data")
+            details_expander.json(selected_motor.to_dict())
